@@ -88,7 +88,7 @@
         <div style="padding: 12px 18px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12.5px; border-bottom: 1px solid #EFEAE1;">data</div>
         <div style="padding: 12px 18px; font-size: 13px; color: #4A463E; border-bottom: 1px solid #EFEAE1;">T | null</div>
         <div style="padding: 12px 18px; font-size: 13px; color: #245F45; border-bottom: 1px solid #EFEAE1;">항상</div>
-        <div style="padding: 12px 18px; font-size: 13px; color: #4A463E; border-bottom: 1px solid #EFEAE1;">엔드포인트별 페이로드. 실패 시 null. 204는 봉투 자체를 쓰지 않는다 &mdash; 컨버터가 호출되지 않기 때문.</div>
+        <div style="padding: 12px 18px; font-size: 13px; color: #4A463E; border-bottom: 1px solid #EFEAE1;">엔드포인트별 페이로드. 실패 시 null. <strong style="font-weight: 600; color: #1C1A16;">204 는 봉투를 쓰지 않는다</strong> &mdash; 본문이 없으면 컨버터가 호출되지 않아 Advice 가 돌 기회가 없다. 규칙의 유일한 예외.
 
         <div style="padding: 12px 18px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12.5px; border-bottom: 1px solid #EFEAE1;">error.code</div>
         <div style="padding: 12px 18px; font-size: 13px; color: #4A463E; border-bottom: 1px solid #EFEAE1;">string</div>

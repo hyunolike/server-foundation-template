@@ -42,7 +42,7 @@
 │  │                advice/FoundationErrorController.kt  <span style="color: #A87318;">← /error 경로</span>
 │  │                filter/TraceIdFilter.kt   <span style="color: #A87318;">← order -110</span>
 │  │                filter/RequestLoggingFilter.kt
-│  │                resolver/PageQueryResolver.kt
+│  │                resolver/PageQueryArgumentResolver.kt
 │  │                config/WebAutoConfiguration.kt
 │  └─ main/resources/META-INF/spring/
 │       …boot.autoconfigure.AutoConfiguration.imports    <span style="color: #A87318;">← Boot 3 의 등록 지점</span>
@@ -54,7 +54,7 @@
 │                  DocsAutoConfiguration.kt
 │
 ├─ <span style="color: #1C1A16; font-weight: 700;">foundation-observability/</span>
-│  └─ main/kotlin/logging/StructuredLogEncoder.kt
+│  └─ main/kotlin/logging/StructuredLogWriter.kt
 │                  logging/MaskingRules.kt    <span style="color: #A87318;">← 마스킹 규칙의 단일 출처</span>
 │                  logging/MdcKeys.kt
 │
