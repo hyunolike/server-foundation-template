@@ -2,7 +2,7 @@
 
 | 항목 | 내용 |
 | --- | --- |
-| 상태 | Draft v0.1 — 리뷰 대기 |
+| 상태 | M0~M4 구현 완료 · M5 진행 중 |
 | 대상 | 이 템플릿으로 새 서버를 시작할 개발자, 표준을 유지할 리뷰어 |
 | 전제 스택 | Kotlin 2.x · Spring Boot 3.x (Web MVC) · JDK 21 · Gradle Kotlin DSL |
 | 함께 보기 | [설계 문서 페이지](https://claude.ai/code/artifact/87868b41-ec72-41d6-a60a-967c91e300a4) · [설계 캔버스](https://claude.ai/code/artifact/c67eedeb-8e3a-4dd0-bbd2-b08a359ae663) |
@@ -257,11 +257,15 @@ Spring의 `Page`를 그대로 직렬화하지 않는다 — 내부 구조가 버
 
 요청 쪽 타입도 `PageQuery`라는 자체 이름을 쓴다. `PageRequest`는 `org.springframework.data.domain`에 이미 있고, Spring Data Web이 클래스패스에 있으면 `PageableHandlerMethodArgumentResolver`가 같은 인자를 두고 경쟁한다 — 이 리졸버는 꺼 둔다.
 
-### 6.5 본문이 없는 성공
+### 6.5 본문이 없는 성공 — 봉투 규칙의 유일한 예외
 
-`204 No Content`는 봉투를 쓰지 않는다. 핸들러가 `null`이나 `Unit`을 반환하면 메시지 컨버터 자체가 호출되지 않아 `beforeBodyWrite`가 실행되지 않기 때문이다 — `"data": null`인 봉투가 아니라 **본문이 아예 없는** 응답이 나간다.
+**결정: `204 No Content`로 내보내고 봉투를 쓰지 않는다.**
 
-이 예외를 없애고 싶으면 삭제 API가 204 대신 200 + `"data": null`을 반환하도록 정하면 된다. 둘 중 하나를 고르고 문서에 적는다 ([§10](#10-열린-질문)).
+핸들러가 본문을 만들지 않으면 메시지 컨버터가 아예 호출되지 않아 `beforeBodyWrite`가 실행되지 않는다. `"data": null`인 봉투가 아니라 **본문이 없는** 응답이 나간다. 구현 중에 실제로 확인한 사실이다 — `Any?`를 반환하며 `null`을 돌려줘도 200에 빈 본문이 나갔다.
+
+대안이던 "200 + `"data": null`"은 버렸다. 그걸 강제하려면 컨트롤러가 빈 객체를 지어내야 하는데, "키는 항상 존재한다"를 지키려고 없는 데이터를 만드는 셈이다. 예외 하나를 문서에 적고 테스트로 고정하는 쪽이 싸다.
+
+`sample-api`의 `EnvelopeContractTest`가 이 예외를 그대로 고정한다 — 204이고, 본문이 비어 있어야 통과한다.
 
 ### 6.6 되짚어 볼 결정
 
@@ -351,57 +355,63 @@ class UserController(
 
 ```
 server-foundation-template/
-├─ settings.gradle.kts
-├─ build.gradle.kts
+├─ settings.gradle.kts · build.gradle.kts · gradle.properties
 ├─ gradle/libs.versions.toml                  ← 모든 버전을 여기 한 곳에서 고정
+├─ .github/workflows/ci.yml
 │
-├─ foundation-core/                           Spring 의존 없음
-│  ├─ main/kotlin/response/ApiResponse.kt      ← 봉투 + meta
-│  │                response/PageResponse.kt
-│  │                error/ErrorCode.kt         ← status 는 Int
-│  │                error/CommonErrorCode.kt
-│  │                error/BusinessException.kt
-│  └─ test/kotlin/CommonErrorCodeContractTest.kt
+├─ foundation-core/                           Spring 의존 0 (빌드가 강제한다)
+│  ├─ main/…/response/ApiResponse.kt           ← 봉투 + meta
+│  │        …/response/PageResponse.kt
+│  │        …/error/ErrorCode.kt               ← status 는 Int
+│  │        …/error/CommonErrorCode.kt
+│  │        …/error/BusinessException.kt
+│  │        …/error/ErrorCodeCatalog.kt
+│  └─ test/…/CommonErrorCodeContractTest.kt
 │
 ├─ foundation-web/
-│  ├─ main/kotlin/advice/ResponseEnvelopeAdvice.kt
-│  │                advice/GlobalExceptionHandler.kt
-│  │                advice/FoundationErrorController.kt   ← /error 경로
-│  │                filter/TraceIdFilter.kt    ← order -110
-│  │                filter/RequestLoggingFilter.kt
-│  │                resolver/PageQueryResolver.kt
-│  │                config/WebAutoConfiguration.kt
-│  └─ main/resources/META-INF/spring/
-│       org.springframework.boot.autoconfigure.AutoConfiguration.imports
-│                                              ← Boot 3 의 자동 등록 지점
+│  ├─ main/…/advice/ResponseEnvelopeAdvice.kt
+│  │        …/advice/GlobalExceptionHandler.kt
+│  │        …/advice/FoundationErrorController.kt   ← /error 경로
+│  │        …/filter/TraceIdFilter.kt          ← order -110
+│  │        …/filter/RequestLoggingFilter.kt   ← order -105
+│  │        …/resolver/PageQuery.kt · PageQueryArgumentResolver.kt
+│  │        …/support/ResponseMetaFactory.kt · ErrorMessageResolver.kt
+│  │        …/support/HttpStatusMapper.kt · PathExclusions.kt
+│  │        …/config/WebAutoConfiguration.kt · FoundationWebProperties.kt
+│  └─ main/resources/foundation-messages.properties
+│       resources/META-INF/spring/
+│         org.springframework.boot.autoconfigure.AutoConfiguration.imports
 │
 ├─ foundation-docs/
-│  └─ main/kotlin/ApiErrorCodes.kt             ← 엔드포인트에 다는 어노테이션
-│                  EnvelopeSchemaCustomizer.kt ← 봉투를 문서에 되돌려 넣는다
-│                  ErrorResponseCustomizer.kt
-│                  DocsAutoConfiguration.kt
+│  ├─ main/…/ApiErrorCodes.kt                  ← 엔드포인트에 다는 어노테이션
+│  │        …/EnvelopeSchemas.kt · EnvelopeSchemaCustomizer.kt
+│  │        …/ErrorResponseCustomizer.kt · PageQueryParameterCustomizer.kt
+│  │        …/OpenApiBreakingChangeDetector.kt ← diffOpenApi 가 실행한다
+│  │        …/DocsAutoConfiguration.kt
+│  └─ test/…/OpenApiBreakingChangeDetectorTest.kt
 │
 ├─ foundation-observability/
-│  └─ main/kotlin/logging/StructuredLogEncoder.kt
-│                  logging/MaskingRules.kt     ← 마스킹 규칙의 단일 출처
-│                  logging/MdcKeys.kt
+│  ├─ main/…/logging/StructuredLogWriter.kt
+│  │        …/logging/MaskingRules.kt          ← 마스킹 규칙의 단일 출처
+│  │        …/logging/MdcKeys.kt
+│  └─ test/…/logging/MaskingRulesTest.kt
 │
 ├─ foundation-test/                           testImplementation 전용
-│  └─ main/kotlin/ApiResponseAssertions.kt
-│                  ErrorCodeContract.kt        ← 각 모듈 테스트가 호출하는 검사기
-│                  OpenApiResponseValidator.kt
-│                  RestDocsSupport.kt
+│  └─ main/…/ApiResponseAssertions.kt
+│           …/ErrorCodeContract.kt             ← 각 모듈 테스트가 호출하는 검사기
+│           …/OpenApiResponseValidator.kt      ← 검증의 두 번째 겹
 │
 ├─ sample-api/                                여기부터가 복제해서 고칠 코드다
-│  └─ main/kotlin/user/UserController.kt
-│                  user/UserService.kt
-│                  user/UserErrorCode.kt
-│                  user/dto/UserResponse.kt
+│  ├─ main/…/user/{UserController, UserService, UserErrorCode}.kt
+│  │        …/user/dto/{UserResponse, CreateUserRequest}.kt
+│  │        …/config/SampleApiDocsConfiguration.kt  ← ErrorCodeCatalog 빈
+│  └─ test/…/EnvelopeContractTest.kt           ← M2 완료 기준
+│           …/OpenApiContractTest.kt           ← M3·M4 완료 기준
+│           …/OpenApiSnapshotTest.kt           ← verifyOpenApi
 │
 └─ docs/
    ├─ design/architecture.md                   ← 이 문서
-   ├─ glossary.md
-   ├─ adr/0001-response-envelope.md
+   ├─ design-canvas/                           ← 설계 캔버스 원본
    └─ openapi/openapi.json                     ← 빌드 산출물이지만 커밋한다
 ```
 
@@ -417,12 +427,12 @@ server-foundation-template/
 
 | 단계 | 이름 | 산출물 | 완료 기준 |
 | --- | --- | --- | --- |
-| **M0** | 골격 | 멀티모듈 6개, 버전 카탈로그, ktlint/detekt, CI 스켈레톤 | 빈 모듈 상태로 `./gradlew build`가 CI에서 통과한다 |
-| **M1** | 계약 | `foundation-core` — 봉투, 페이지, `ErrorCode`, 공통 코드 | 의존성 그래프에 Spring이 없고, 에러 코드 계약 테스트가 통과한다 |
-| **M2** | 표준화 | `foundation-web` + `foundation-observability` — 봉투 Advice, 예외 핸들러, `/error`, TraceId, 마스킹 | 성공 · 검증 실패 · 미처리 예외 · 매핑 없는 URL 네 응답이 모두 같은 봉투로 나온다 |
-| **M3** | 문서화 | `foundation-docs` — 스키마 커스터마이저, `@ApiErrorCodes` | Swagger UI에서 200이 봉투로, 404가 실제 코드로 보인다 |
-| **M4** | 검증 | REST Docs 지원, 스펙 응답 검증기, `verifyOpenApi` / `diffOpenApi` | 응답 필드를 하나 바꾸면 문서 갱신 없이는 CI가 실패한다 |
-| **M5** | 템플릿화 | GitHub template 설정, 패키지명 치환 스크립트, README · ADR · 용어집 | 새 저장소에서 첫 엔드포인트와 문서까지 10분 |
+| **M0** ✅ | 골격 | 멀티모듈 6개, 버전 카탈로그, ktlint/detekt, CI 스켈레톤 | 빈 모듈 상태로 `./gradlew build`가 CI에서 통과한다 |
+| **M1** ✅ | 계약 | `foundation-core` — 봉투, 페이지, `ErrorCode`, 공통 코드 | 의존성 그래프에 Spring이 없고, 에러 코드 계약 테스트가 통과한다 |
+| **M2** ✅ | 표준화 | `foundation-web` + `foundation-observability` — 봉투 Advice, 예외 핸들러, `/error`, TraceId, 마스킹 | 성공 · 검증 실패 · 미처리 예외 · 매핑 없는 URL 네 응답이 모두 같은 봉투로 나온다 |
+| **M3** ✅ | 문서화 | `foundation-docs` — 스키마 커스터마이저, `@ApiErrorCodes` | Swagger UI에서 200이 봉투로, 404가 실제 코드로 보인다 |
+| **M4** ✅ | 검증 | REST Docs 지원, 스펙 응답 검증기, `verifyOpenApi` / `diffOpenApi` | 응답 필드를 하나 바꾸면 문서 갱신 없이는 CI가 실패한다 |
+| **M5** ⏳ | 템플릿화 | GitHub template 설정, 패키지명 치환 스크립트, README · ADR · 용어집 | 새 저장소에서 첫 엔드포인트와 문서까지 10분 |
 
 순서가 중요하다. **M1~M2가 "요청·응답 표준화", M3~M4가 "문서화"** 다 — 표준이 없으면 자동 문서화할 대상 자체가 없다.
 
@@ -434,8 +444,16 @@ server-foundation-template/
 2. **인증 방식.** 범위 밖으로 뒀지만, JWT인지 세션인지에 따라 `SecurityFilterChain` 자리의 기본 제공 수준이 달라진다.
 3. **필드 네이밍.** 위 예시는 camelCase다. 기존 클라이언트가 snake_case를 쓴다면 `ObjectMapper` 전략을 M1에서 정해야 한다.
 4. **다국어.** `Accept-Language` 기반 메시지 번역을 M2에 넣을지, 한국어 고정으로 시작할지.
-5. **204 처리.** 본문 없는 성공을 204로 둘지, 200 + `"data": null`로 통일할지 ([§6.5](#65-본문이-없는-성공)).
-6. **버전 고정.** 본문의 Kotlin 2.x / Boot 3.x / JDK 21은 제안값이다. M0에서 정확한 버전으로 고정한다.
+5. **다음 도메인.** `sample-api`의 `user`는 메모리 맵이다. 실제 데이터 접근 계층을 고르는 시점과 기준.
+
+### 구현하면서 닫힌 질문
+
+| 질문 | 결정 |
+| --- | --- |
+| 204 처리 | 204 + 본문 없음. 봉투 규칙의 유일한 예외로 문서화하고 테스트로 고정했다 ([§6.5](#65-본문이-없는-성공--봉투-규칙의-유일한-예외)) |
+| 버전 고정 | Kotlin 2.2.21 · Spring Boot 3.5.16 · springdoc 2.9.1 · JDK 21 · Gradle 8.14.3 |
+| 필드 네이밍 | camelCase 유지 |
+| 다국어 | `Accept-Language` 기반. 기본 번들은 한국어, `_en` 제공. 문서 생성은 한국어로 고정 |
 
 ## 부록. 남길 ADR
 
@@ -447,3 +465,5 @@ server-foundation-template/
 | 0004 | `openapi.json`을 저장소에 커밋하고 CI에서 검증한다 |
 | 0005 | Web MVC를 선택하고 WebFlux를 범위에서 제외한다 |
 | 0006 | `/error` 경로까지 봉투를 확장하고 `ProblemDetail`을 끈다 |
+| 0007 | 본문 없는 성공은 204로 내보내고 봉투를 쓰지 않는다 |
+| 0008 | `openapi.json` 스냅샷을 테스트로 검증하고 호환성 검사기를 직접 둔다 |

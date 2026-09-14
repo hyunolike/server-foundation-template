@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: sample-api
+  mvc:
+    problemdetails:
+      # RFC 7807 ProblemDetail 은 표준 봉투와 충돌한다. (설계 문서 §5.3)
+      enabled: false
+  jackson:
+    # data 와 error 는 null 이어도 키가 남아야 한다. (설계 문서 §6.6)
+    default-property-inclusion: always
+
+server:
+  error:
+    include-message: never
+    include-stacktrace: never
+
+logging:
+  level:
+    com.hyunolike: INFO
