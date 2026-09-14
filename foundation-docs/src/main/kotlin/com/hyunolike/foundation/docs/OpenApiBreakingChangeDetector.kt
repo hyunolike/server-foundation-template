@@ -177,7 +177,17 @@ fun main(args: Array<String>) {
         exitProcess(2)
     }
 
-    val findings = OpenApiBreakingChangeDetector.detect(File(args[0]).readText(), File(args[1]).readText())
+    val specs =
+        args.map { path ->
+            val file = File(path)
+            if (!file.isFile) {
+                System.err.println("스펙 파일을 찾을 수 없습니다: ${file.absolutePath}")
+                exitProcess(2)
+            }
+            file.readText()
+        }
+
+    val findings = OpenApiBreakingChangeDetector.detect(specs[0], specs[1])
 
     if (findings.isEmpty()) {
         println("호환성이 깨지는 변경 없음.")

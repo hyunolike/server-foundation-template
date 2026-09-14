@@ -111,12 +111,14 @@ Gradle 멀티모듈. 화살표는 의존 방향이다.
 | --- | --- | --- |
 | 01 | `TraceIdFilter` | 요청당 traceId를 만들거나 `traceparent`·`X-Request-Id`를 이어받는다 → MDC + 응답 헤더 `X-Trace-Id` |
 | 02 | `RequestLoggingFilter` | 본문 캐싱 래퍼, 마스킹 후 한 줄 구조화 로그 |
-| 03 | `SecurityFilterChain` *(선택)* | 인증. 실패도 **같은 봉투**로 나가도록 EntryPoint 교체 |
-| 04 | `HandlerInterceptor` | 요청 제한 · 멱등성 키 · 감사 로그 훅. 템플릿은 비워 둔다 |
+| 03 | `SecurityFilterChain` | **미구현 — 확장 지점.** 인증을 붙일 때, 실패도 같은 봉투로 나가도록 EntryPoint를 교체해야 한다 |
+| 04 | `HandlerInterceptor` | **미구현 — 확장 지점.** 요청 제한 · 멱등성 키 · 감사 로그를 붙일 자리 |
 | 05 | `@Valid` + ArgumentResolver | 요청 DTO 바인딩·검증. 페이징은 공용 `PageQuery` 리졸버로 통일 |
 | 06 | Controller → Service | **봉투를 모르는 유일한 구간** |
 | 07 | `ResponseEnvelopeAdvice` | `ApiResponse.success()`로 래핑, `meta` 채움. 이미 `ApiResponse`인 본문은 건너뛴다 |
 | 08 | Jackson Converter | 네이밍 · 날짜 · null 정책을 한 `ObjectMapper` 설정으로 적용 |
+
+03과 04는 코드에 없다. 인증은 [비목표](#2-목표와-비목표)이고, 04에 넣을 것은 서비스마다 다르다. 자리를 비워 둔 것과 구현한 것을 문서에서 섞지 않는다.
 
 > **필터 순서.** Spring Security의 `springSecurityFilterChain`은 `-100`에 등록된다. 01과 02를 그보다 앞에 두려면 `-110`·`-105`처럼 명시적으로 순서를 지정해야 한다. 기본값으로 두면 Security가 먼저 돌고, 401 응답에는 traceId가 없다.
 
@@ -236,6 +238,8 @@ enum class UserErrorCode(
 | `COMMON_INTERNAL_ERROR` | 500 |
 
 `foundation-test`의 `ErrorCodeContract` 검사기를 각 모듈의 테스트가 호출해 빌드마다 확인한다 — 코드 문자열 중복 없음, `code`와 enum 이름 일치, 상태 값이 유효한 HTTP 코드, 메시지 키가 메시지 번들에 실재함.
+
+호출하는 곳은 둘이다. `foundation-core`는 공통 코드를, `sample-api`는 `ErrorCodeCatalog`에 등록된 전부(공통 + 도메인)를 검사한다. 카탈로그가 기준인 이유는 거기 없는 코드는 문서에도 실리지 않기 때문이다. 공통 메시지 번들은 `CommonErrorCode`와 같은 모듈에 둔다 — 그래야 계약 테스트가 볼 수 있다.
 
 > **이름 충돌.** 봉투 타입 `ApiResponse`는 springdoc이 쓰는 `io.swagger.v3.oas.annotations.responses.ApiResponse`와 이름이 겹친다. 둘을 함께 쓰는 파일에서는 import alias를 강제한다.
 
@@ -469,7 +473,7 @@ M5에서 코드로 할 수 있는 일은 끝났다. 남은 하나는 GitHub 저�
 | 204 처리 | 204 + 본문 없음. 봉투 규칙의 유일한 예외로 문서화하고 테스트로 고정했다 ([§6.5](#65-본문이-없는-성공--봉투-규칙의-유일한-예외)) |
 | 버전 고정 | Kotlin 2.2.21 · Spring Boot 3.5.16 · springdoc 2.9.1 · JDK 21 · Gradle 8.14.3 |
 | 필드 네이밍 | camelCase 유지 |
-| 다국어 | `Accept-Language` 기반. 기본 번들은 한국어, `_en` 제공. 문서 생성은 한국어로 고정 |
+| 다국어 | `Accept-Language` 기반, 헤더가 없으면 한국어(`spring.web.locale=ko`). 지정하지 않으면 JVM 기본 로케일을 따라가 한국어 서비스가 영어 메시지를 낸다 — 실제로 앱을 띄워 보고 발견했다. 문서 생성은 한국어로 고정 |
 
 ## 부록. 남길 ADR
 

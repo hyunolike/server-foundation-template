@@ -1,6 +1,11 @@
 spring:
   application:
     name: sample-api
+  web:
+    # Accept-Language 가 없는 요청의 기본 언어. 지정하지 않으면 JVM 기본 로케일을 따라가
+    # 한국어 서비스가 영어 메시지를 내보낸다. 헤더가 오면 그쪽이 이긴다.
+    locale: ko
+    locale-resolver: accept_header
   mvc:
     problemdetails:
       # RFC 7807 ProblemDetail 은 표준 봉투와 충돌한다. (설계 문서 §5.3)

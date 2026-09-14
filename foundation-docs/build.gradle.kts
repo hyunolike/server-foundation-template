@@ -21,6 +21,8 @@ val diffOpenApi by tasks.registering(JavaExec::class) {
     description = "기준 스펙과 비교해 호환성이 깨지는 변경을 찾는다."
     mainClass.set("com.hyunolike.foundation.docs.OpenApiBreakingChangeDetectorKt")
     classpath = sourceSets["main"].runtimeClasspath
+    // 상대 경로는 저장소 루트 기준이어야 한다 — CI 가 넘기는 경로도 거기서 만든다.
+    workingDir = rootProject.projectDir
 
     val baseSpec = providers.gradleProperty("baseSpec")
     val headSpec =

@@ -141,6 +141,22 @@ class EnvelopeContractTest {
             .andExpect(hasFieldError("size"))
     }
 
+    @Test
+    fun `Accept-Language 가 없으면 한국어로 답한다`() {
+        mockMvc
+            .perform(get("/api/v1/definitely-not-here"))
+            .andExpect(status().isNotFound)
+            .andExpect(jsonPath("$.error.message").value("요청한 리소스를 찾을 수 없습니다."))
+    }
+
+    @Test
+    fun `Accept-Language 가 오면 그 언어로 답한다`() {
+        mockMvc
+            .perform(get("/api/v1/definitely-not-here").header("Accept-Language", "en"))
+            .andExpect(status().isNotFound)
+            .andExpect(jsonPath("$.error.message").value("The requested resource was not found."))
+    }
+
     private fun get(path: String) =
         org.springframework.test.web.servlet.request.MockMvcRequestBuilders
             .get(path)
