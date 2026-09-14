@@ -35,17 +35,17 @@
       <div style="padding: 16px 18px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; font-weight: 700; color: #7C776C; border-bottom: 1px solid #EFEAE1;">M0</div>
       <div style="padding: 16px 18px; font-size: 14.5px; font-weight: 600; border-bottom: 1px solid #EFEAE1;">골격</div>
       <div style="padding: 16px 18px; font-size: 13.5px; line-height: 1.6; color: #4A463E; border-bottom: 1px solid #EFEAE1;">Gradle 멀티모듈 6개, 버전 카탈로그, ktlint/detekt, CI 워크플로 스켈레톤</div>
-      <div style="padding: 16px 18px; font-size: 13.5px; line-height: 1.6; color: #4A463E; border-bottom: 1px solid #EFEAE1;">빈 모듈 상태로 <code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px;">gradlew build</code>가 CI에서 통과한다</div>
+      <div style="padding: 16px 18px; font-size: 13.5px; line-height: 1.6; color: #4A463E; border-bottom: 1px solid #EFEAE1;">빈 모듈 상태로 <code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px;">./gradlew build</code>가 CI에서 통과한다</div>
 
       <div style="padding: 16px 18px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; font-weight: 700; color: #7C776C; border-bottom: 1px solid #EFEAE1;">M1</div>
       <div style="padding: 16px 18px; font-size: 14.5px; font-weight: 600; border-bottom: 1px solid #EFEAE1;">계약</div>
       <div style="padding: 16px 18px; font-size: 13.5px; line-height: 1.6; color: #4A463E; border-bottom: 1px solid #EFEAE1;"><code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px;">foundation-core</code> &mdash; ApiResponse, PageResponse, ErrorCode, BusinessException, 공통 코드</div>
-      <div style="padding: 16px 18px; font-size: 13.5px; line-height: 1.6; color: #4A463E; border-bottom: 1px solid #EFEAE1;">Spring 의존이 0이고, 에러 코드 중복&middot;상태 누락을 잡는 계약 테스트가 돈다</div>
+      <div style="padding: 16px 18px; font-size: 13.5px; line-height: 1.6; color: #4A463E; border-bottom: 1px solid #EFEAE1;">의존성 그래프에 Spring이 없고, 에러 코드 중복&middot;상태 누락을 잡는 계약 테스트가 돈다</div>
 
       <div style="padding: 16px 18px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; font-weight: 700; color: #2E7D5B; border-bottom: 1px solid #EFEAE1;">M2</div>
       <div style="padding: 16px 18px; font-size: 14.5px; font-weight: 600; border-bottom: 1px solid #EFEAE1;">표준화</div>
-      <div style="padding: 16px 18px; font-size: 13.5px; line-height: 1.6; color: #4A463E; border-bottom: 1px solid #EFEAE1;"><code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px;">foundation-web</code> &mdash; 봉투 Advice, 전역 예외 핸들러, TraceId 필터, 페이징 리졸버, 자동 설정</div>
-      <div style="padding: 16px 18px; font-size: 13.5px; line-height: 1.6; color: #4A463E; border-bottom: 1px solid #EFEAE1;">sample-api의 성공&middot;검증실패&middot;미처리 예외 세 응답이 모두 같은 봉투로 나온다</div>
+      <div style="padding: 16px 18px; font-size: 13.5px; line-height: 1.6; color: #4A463E; border-bottom: 1px solid #EFEAE1;"><code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px;">foundation-web</code> + <code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px;">observability</code> &mdash; 봉투 Advice, 예외 핸들러, /error, TraceId, 마스킹</div>
+      <div style="padding: 16px 18px; font-size: 13.5px; line-height: 1.6; color: #4A463E; border-bottom: 1px solid #EFEAE1;">성공 &middot; 검증 실패 &middot; 미처리 예외 &middot; 매핑 없는 URL 네 응답이 모두 같은 봉투로 나온다</div>
 
       <div style="padding: 16px 18px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; font-weight: 700; color: #2E7D5B; border-bottom: 1px solid #EFEAE1;">M3</div>
       <div style="padding: 16px 18px; font-size: 14.5px; font-weight: 600; border-bottom: 1px solid #EFEAE1;">문서화</div>
@@ -54,12 +54,12 @@
 
       <div style="padding: 16px 18px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; font-weight: 700; color: #3D5CC4; border-bottom: 1px solid #EFEAE1;">M4</div>
       <div style="padding: 16px 18px; font-size: 14.5px; font-weight: 600; border-bottom: 1px solid #EFEAE1;">검증</div>
-      <div style="padding: 16px 18px; font-size: 13.5px; line-height: 1.6; color: #4A463E; border-bottom: 1px solid #EFEAE1;">REST Docs 지원, <code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px;">openapi:verify</code> / <code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px;">openapi:diff</code> CI 태스크</div>
-      <div style="padding: 16px 18px; font-size: 13.5px; line-height: 1.6; color: #4A463E; border-bottom: 1px solid #EFEAE1;">응답 필드를 하나 바꿔 보면 문서 갱신 없이는 CI가 빨개진다</div>
+      <div style="padding: 16px 18px; font-size: 13.5px; line-height: 1.6; color: #4A463E; border-bottom: 1px solid #EFEAE1;">REST Docs 지원, 스펙 응답 검증기, <code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px;">verifyOpenApi</code> / <code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px;">diffOpenApi</code></div>
+      <div style="padding: 16px 18px; font-size: 13.5px; line-height: 1.6; color: #4A463E; border-bottom: 1px solid #EFEAE1;">응답 필드를 하나 바꿔 보면 문서 갱신 없이는 CI가 실패한다</div>
 
       <div style="padding: 16px 18px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; font-weight: 700; color: #3D5CC4;">M5</div>
       <div style="padding: 16px 18px; font-size: 14.5px; font-weight: 600;">템플릿화</div>
-      <div style="padding: 16px 18px; font-size: 13.5px; line-height: 1.6; color: #4A463E;">관측성 모듈, GitHub template 설정, 패키지명 치환 스크립트, README &middot; ADR</div>
+      <div style="padding: 16px 18px; font-size: 13.5px; line-height: 1.6; color: #4A463E;">GitHub template 설정, 패키지명 치환 스크립트, README &middot; ADR &middot; 용어집</div>
       <div style="padding: 16px 18px; font-size: 13.5px; line-height: 1.6; color: #4A463E;">새 저장소를 만들어 첫 엔드포인트와 문서를 얻기까지 10분 안에 끝난다</div>
 
     </div>

@@ -46,7 +46,7 @@
     <div style="background: #FFFFFF; border: 1px solid #E2DDD3; border-left: 3px solid #3D5CC4; border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 9px;">
       <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; color: #3D5CC4; letter-spacing: 0.08em;">01 &middot; FILTER</div>
       <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13.5px; font-weight: 700;">TraceIdFilter</div>
-      <div style="font-size: 13px; line-height: 1.6; color: #4A463E;">요청당 traceId를 만들거나 <code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11.5px;">X-Request-Id</code>를 승계한다. MDC에 넣고 응답 헤더로 되돌려준다.</div>
+      <div style="font-size: 13px; line-height: 1.6; color: #4A463E;">요청당 traceId를 만들거나 <code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11.5px;">traceparent</code>를 이어받는다. MDC에 넣고 응답 헤더로 되돌려준다. 순서는 <code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11.5px;">-110</code>.</div>
     </div>
 
     <div style="background: #FFFFFF; border: 1px solid #E2DDD3; border-left: 3px solid #3D5CC4; border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 9px;">
@@ -58,19 +58,19 @@
     <div style="background: #FFFFFF; border: 1px solid #E2DDD3; border-left: 3px solid #3D5CC4; border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 9px;">
       <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; color: #3D5CC4; letter-spacing: 0.08em;">03 &middot; FILTER (OPT)</div>
       <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13.5px; font-weight: 700;">SecurityFilterChain</div>
-      <div style="font-size: 13px; line-height: 1.6; color: #4A463E;">인증 실패도 예외 경로와 <strong style="font-weight: 600; color: #1C1A16;">같은 봉투</strong>로 나가도록 EntryPoint를 교체한다.</div>
+      <div style="font-size: 13px; line-height: 1.6; color: #4A463E;"><code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11.5px;">-100</code>에 등록되므로 01&middot;02를 그보다 앞에 두려면 순서를 명시해야 한다. EntryPoint도 같은 봉투로 교체.</div>
     </div>
 
     <div style="background: #FFFFFF; border: 1px solid #E2DDD3; border-left: 3px solid #3D5CC4; border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 9px;">
       <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; color: #3D5CC4; letter-spacing: 0.08em;">04 &middot; INTERCEPTOR</div>
       <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13.5px; font-weight: 700;">HandlerInterceptor</div>
-      <div style="font-size: 13px; line-height: 1.6; color: #4A463E;">레이트리밋 &middot; 멱등키 &middot; 감사 로그를 붙이는 확장 지점. 기본 템플릿은 비워 둔다.</div>
+      <div style="font-size: 13px; line-height: 1.6; color: #4A463E;">요청 제한 &middot; 멱등성 키 &middot; 감사 로그를 붙이는 확장 지점. 기본 템플릿은 비워 둔다.</div>
     </div>
 
     <div style="background: #FFFFFF; border: 1px solid #E2DDD3; border-left: 3px solid #1C1A16; border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 9px;">
       <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; color: #1C1A16; letter-spacing: 0.08em;">05 &middot; BINDING</div>
       <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13.5px; font-weight: 700;">@Valid + Resolver</div>
-      <div style="font-size: 13px; line-height: 1.6; color: #4A463E;">요청 DTO 바인딩과 검증. 페이징은 공용 <code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11.5px;">PageRequest</code> 리졸버로 통일한다.</div>
+      <div style="font-size: 13px; line-height: 1.6; color: #4A463E;">요청 DTO 바인딩과 검증. 페이징은 공용 <code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11.5px;">PageQuery</code> 리졸버로 통일한다.</div>
     </div>
 
     <div style="background: #FFFFFF; border: 1px solid #E2DDD3; border-left: 3px solid #1C1A16; border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 9px;">
@@ -82,7 +82,7 @@
     <div style="background: #FFFFFF; border: 1px solid #E2DDD3; border-left: 3px solid #2E7D5B; border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 9px;">
       <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; color: #2E7D5B; letter-spacing: 0.08em;">07 &middot; ADVICE</div>
       <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13.5px; font-weight: 700;">ResponseEnvelopeAdvice</div>
-      <div style="font-size: 13px; line-height: 1.6; color: #4A463E;">반환값을 <code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11.5px;">ApiResponse.success()</code>로 감싸고 meta(traceId, timestamp, path)를 채운다.</div>
+      <div style="font-size: 13px; line-height: 1.6; color: #4A463E;">반환값을 <code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11.5px;">ApiResponse.success()</code>로 감싸고 meta를 채운다. 이미 봉투인 본문과 String 반환은 건너뛴다.</div>
     </div>
 
     <div style="background: #FFFFFF; border: 1px solid #E2DDD3; border-left: 3px solid #2E7D5B; border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 9px;">
@@ -96,7 +96,7 @@
   <div style="display: flex; flex-direction: column; gap: 16px;">
     <div style="display: flex; align-items: center; gap: 12px;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B4462E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m3 7 6 6-6 6"/><path d="M13 13h8"/><path d="M13 7h8"/></svg>
-      <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px; letter-spacing: 0.12em; color: #7C776C;">예외 경로 &mdash; 05~06 어디서 갈라지든 07과 같은 모양으로 합류한다</div>
+      <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px; letter-spacing: 0.12em; color: #7C776C;">예외 경로 &mdash; 03~06 어디서 갈라지든 07과 같은 모양으로 합류한다</div>
       <div style="flex-grow: 1; height: 1px; background: #E2DDD3;"></div>
     </div>
 
@@ -111,14 +111,14 @@
       </div>
       <div style="background: #F9EEEA; border: 1px solid #E6C4B8; border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 9px;">
         <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; font-weight: 700; color: #8E3623;">Exception (fallback)</div>
-        <div style="font-size: 13px; line-height: 1.6; color: #5A3529;">예상 밖 오류. 내부 메시지는 절대 밖으로 내보내지 않고 traceId만 안내한다. 로그는 ERROR로 전량 남긴다.</div>
+        <div style="font-size: 13px; line-height: 1.6; color: #5A3529;">예상 밖 오류. 내부 메시지는 절대 밖으로 내보내지 않고 traceId만 안내한다. 로그는 ERROR로 모두 남긴다.</div>
       </div>
     </div>
   </div>
 
   <div style="background: #FFFFFF; border: 1px solid #E2DDD3; border-radius: 10px; padding: 20px 24px; display: flex; align-items: flex-start; gap: 14px;">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#A87318" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px;"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
-    <div style="font-size: 13.5px; line-height: 1.65; color: #4A463E; text-wrap: pretty;"><strong style="font-weight: 600; color: #1C1A16;">봉투 제외 경로.</strong> <code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px;">/actuator/**</code>, <code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px;">/v3/api-docs/**</code>, <code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px;">/swagger-ui/**</code>, 그리고 파일 다운로드처럼 <code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px;">application/json</code>이 아닌 응답은 07을 건너뛴다. 예외 목록은 프로퍼티로 열어 두되 기본값을 코드에 박아 둔다 &mdash; 이 목록이 길어지면 표준이 무너진 신호다.</div>
+    <div style="font-size: 13.5px; line-height: 1.65; color: #4A463E; text-wrap: pretty;"><strong style="font-weight: 600; color: #1C1A16;">봉투를 만드는 곳은 세 군데다.</strong> 07 Advice(정상), <code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px;">GlobalExceptionHandler</code>(예외), 그리고 <code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px;">FoundationErrorController</code>. 세 번째가 없으면 표준이 샌다 &mdash; Boot 3에서 매핑 없는 URL의 404, 405, 필터에서 터진 예외는 <code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px;">/error</code>로 포워딩되어 Advice를 타지 않고 전혀 다른 모양으로 나간다. 제외 경로(<code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px;">/actuator/**</code>, <code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px;">/v3/api-docs/**</code>, 비 JSON 응답)는 프로퍼티로 열어 두되 기본값을 코드에 박아 둔다.</div>
   </div>
 
 </div>
