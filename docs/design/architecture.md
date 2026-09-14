@@ -2,9 +2,10 @@
 
 | 항목 | 내용 |
 | --- | --- |
-| 상태 | M0~M4 구현 완료 · M5 진행 중 |
+| 상태 | M0~M5 구현 완료 (저장소 설정 1건 남음) |
 | 대상 | 이 템플릿으로 새 서버를 시작할 개발자, 표준을 유지할 리뷰어 |
 | 전제 스택 | Kotlin 2.x · Spring Boot 3.x (Web MVC) · JDK 21 · Gradle Kotlin DSL |
+| 결정 기록 | [`docs/adr/`](../adr/) · 용어는 [`docs/glossary.md`](../glossary.md) |
 | 함께 보기 | [설계 문서 페이지](https://claude.ai/code/artifact/87868b41-ec72-41d6-a60a-967c91e300a4) · [설계 캔버스](https://claude.ai/code/artifact/c67eedeb-8e3a-4dd0-bbd2-b08a359ae663) |
 
 ---
@@ -341,7 +342,12 @@ class UserController(
 | REST Docs | 문서의 예시·필드 설명이 실재하는 응답에서 나왔다 | 스펙 전체가 맞는지는 모른다 |
 | 스펙 응답 검증 | MockMvc가 받은 실제 응답이 `openapi.json`의 해당 스키마를 만족한다 | 테스트가 없는 엔드포인트는 검증되지 않는다 |
 
-두 번째 겹이 `foundation-test`가 제공하는 핵심이다. OpenAPI 응답 검증기(예: `swagger-request-validator`)에 생성된 스펙을 물리고, 모든 컨트롤러 테스트가 그 검증기를 통과하게 한다. 커스터마이저가 봉투를 잘못 주입하면 여기서 잡힌다.
+`foundation-test`가 두 겹을 모두 제공한다.
+
+- 첫 번째 겹 — `RestDocsSupport`. 봉투 공통 필드를 미리 정의해 두고, 엔드포인트는 `data` 하위만 적는다. 응답에 없는 필드를 문서에 적어도, 응답에 있는 필드를 빠뜨려도 테스트가 깨진다. 실제로 확인했다 — 없는 필드를 하나 추가하니 `Fields with the following paths were not found in the payload: [data.nickname]`.
+- 두 번째 겹 — `OpenApiResponseValidator`. 생성된 스펙을 OpenAPI 응답 검증기(`swagger-request-validator`)에 물리고, 컨트롤러 테스트가 그 검증기를 통과하게 한다. 커스터마이저가 봉투를 잘못 주입하면 여기서 잡힌다.
+
+둘 다 "테스트가 있는 엔드포인트"만 본다. 커버리지는 테스트 커버리지와 같다.
 
 ### 7.5 CI 게이트
 
@@ -399,6 +405,7 @@ server-foundation-template/
 ├─ foundation-test/                           testImplementation 전용
 │  └─ main/…/ApiResponseAssertions.kt
 │           …/ErrorCodeContract.kt             ← 각 모듈 테스트가 호출하는 검사기
+│           …/RestDocsSupport.kt               ← 검증의 첫 번째 겹
 │           …/OpenApiResponseValidator.kt      ← 검증의 두 번째 겹
 │
 ├─ sample-api/                                여기부터가 복제해서 고칠 코드다
@@ -406,12 +413,17 @@ server-foundation-template/
 │  │        …/user/dto/{UserResponse, CreateUserRequest}.kt
 │  │        …/config/SampleApiDocsConfiguration.kt  ← ErrorCodeCatalog 빈
 │  └─ test/…/EnvelopeContractTest.kt           ← M2 완료 기준
-│           …/OpenApiContractTest.kt           ← M3·M4 완료 기준
+│           …/OpenApiContractTest.kt           ← M3 완료 기준
+│           …/UserApiDocumentationTest.kt      ← REST Docs 스니펫
 │           …/OpenApiSnapshotTest.kt           ← verifyOpenApi
+│
+├─ scripts/init-template.sh                   ← 복제 후 이름·패키지 치환
 │
 └─ docs/
    ├─ design/architecture.md                   ← 이 문서
    ├─ design-canvas/                           ← 설계 캔버스 원본
+   ├─ adr/0001~0008-*.md                       ← 결정과 그 배경
+   ├─ glossary.md
    └─ openapi/openapi.json                     ← 빌드 산출물이지만 커밋한다
 ```
 
@@ -432,9 +444,13 @@ server-foundation-template/
 | **M2** ✅ | 표준화 | `foundation-web` + `foundation-observability` — 봉투 Advice, 예외 핸들러, `/error`, TraceId, 마스킹 | 성공 · 검증 실패 · 미처리 예외 · 매핑 없는 URL 네 응답이 모두 같은 봉투로 나온다 |
 | **M3** ✅ | 문서화 | `foundation-docs` — 스키마 커스터마이저, `@ApiErrorCodes` | Swagger UI에서 200이 봉투로, 404가 실제 코드로 보인다 |
 | **M4** ✅ | 검증 | REST Docs 지원, 스펙 응답 검증기, `verifyOpenApi` / `diffOpenApi` | 응답 필드를 하나 바꾸면 문서 갱신 없이는 CI가 실패한다 |
-| **M5** ⏳ | 템플릿화 | GitHub template 설정, 패키지명 치환 스크립트, README · ADR · 용어집 | 새 저장소에서 첫 엔드포인트와 문서까지 10분 |
+| **M5** ◐ | 템플릿화 | 패키지명 치환 스크립트, README · ADR 8건 · 용어집, PR 템플릿 | 복제본에서 `init-template.sh` 를 돌린 뒤 `check` 가 통과한다 |
 
 순서가 중요하다. **M1~M2가 "요청·응답 표준화", M3~M4가 "문서화"** 다 — 표준이 없으면 자동 문서화할 대상 자체가 없다.
+
+M5에서 코드로 할 수 있는 일은 끝났다. 남은 하나는 GitHub 저장소 설정의 **Template repository** 체크박스인데, 이건 저장소 소유자만 켤 수 있고 코드로는 켜지지 않는다.
+
+`init-template.sh` 는 복제본에서 실제로 검증했다 — `--module order-api --package com.acme.order` 로 돌린 뒤 `./gradlew check --rerun-tasks` 가 테스트 35개를 통과한다. 한 가지 알아 둘 점: `ktlintFormat` 은 import 순서를 고쳐 주지 않고 검사만 하므로, 패키지가 바뀐 뒤 정렬은 스크립트가 직접 맞춘다.
 
 ## 10. 열린 질문
 
