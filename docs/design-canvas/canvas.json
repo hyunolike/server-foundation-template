@@ -1,0 +1,41 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "title": "01 · 아키텍처 개요", "x": 0, "y": 0, "w": 1280, "h": 1560 },
+    { "file": "RequestFlow.dc.html", "title": "02 · 요청/응답 파이프라인", "x": 0, "y": 1700, "w": 1280, "h": 1280 },
+    { "file": "ResponseSpec.dc.html", "title": "03 · 표준 응답 계약", "x": 0, "y": 3120, "w": 1080, "h": 2300 },
+    { "file": "PackageStructure.dc.html", "title": "04 · 저장소 구조", "x": 1200, "y": 3120, "w": 900, "h": 1740 },
+    { "file": "DocsPipeline.dc.html", "title": "05 · 문서화 파이프라인", "x": 0, "y": 5560, "w": 1280, "h": 1660 },
+    { "file": "Roadmap.dc.html", "title": "06 · 구현 순서", "x": 1400, "y": 5560, "w": 1120, "h": 1120 }
+  ],
+  "annotations": [
+    {
+      "id": "premise",
+      "x": 1400,
+      "y": 0,
+      "w": 300,
+      "text": "설계 전제\n\n저장소가 README 한 줄뿐이라 기존 코드·디자인 시스템 없이 백지에서 시작했습니다.\n\n표기한 버전(Kotlin 2.x, Spring Boot 3.x, JDK 21)은 제안값입니다. 실제 고정은 M0에서."
+    },
+    {
+      "id": "module-scale",
+      "x": 1400,
+      "y": 1700,
+      "w": 300,
+      "text": "확인이 필요한 지점\n\n팀 규모가 작다면 6개 멀티모듈 대신 단일 모듈 + 패키지 분리로 줄일 수 있습니다.\n\n경계는 같고 빌드 설정만 가벼워집니다. 어느 쪽이 좋을지 알려주세요."
+    },
+    {
+      "id": "auth-scope",
+      "x": 2200,
+      "y": 3120,
+      "w": 300,
+      "text": "인증·인가는 범위 밖\n\nSecurityFilterChain이 들어갈 자리와 401/403 공통 에러 코드만 미리 뚫어 두었습니다.\n\n실제 인증 방식(JWT/세션/OAuth)은 별도 설계가 필요합니다."
+    },
+    {
+      "id": "two-axes",
+      "x": 2600,
+      "y": 5560,
+      "w": 300,
+      "text": "README의 두 축\n\nM1~M2가 \"요청·응답 표준화\", M3~M4가 \"문서화\"입니다.\n\n순서가 중요합니다 — 표준이 없으면 자동 문서화할 대상도 없습니다."
+    }
+  ],
+  "launch": { "view": "canvas" }
+}

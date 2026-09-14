@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
+  <style>
+    body { margin: 0; background: #FAF8F4; font-family: 'Space Grotesk', 'Helvetica Neue', Helvetica, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #2E7D5B; text-decoration: none; }
+    a:hover { color: #245F45; }
+  </style>
+</helmet>
+
+<div style="width: 900px; box-sizing: border-box; background: #FAF8F4; color: #1C1A16; padding: 56px 52px 60px; display: flex; flex-direction: column; gap: 32px;">
+
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px; letter-spacing: 0.14em; color: #7C776C;">REPOSITORY LAYOUT</div>
+    <div style="font-size: 32px; font-weight: 700; letter-spacing: -0.02em;">파일이 놓이는 자리</div>
+    <div style="font-size: 15px; line-height: 1.55; color: #4A463E; text-wrap: pretty;">템플릿을 복제한 사람이 <strong style="font-weight: 600; color: #1C1A16;">어디를 건드리고 어디를 건드리지 않는지</strong> 트리만 보고 알 수 있어야 한다.</div>
+  </div>
+
+  <div style="background: #FFFFFF; border: 1px solid #E2DDD3; border-radius: 12px; padding: 26px 28px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12.5px; line-height: 1.9; color: #4A463E; white-space: pre; overflow-x: auto;"><span style="color: #1C1A16; font-weight: 700;">server-foundation-template/</span>
+├─ settings.gradle.kts
+├─ build.gradle.kts
+├─ gradle/libs.versions.toml            <span style="color: #A87318;">← 모든 버전을 여기 한 곳에서 고정</span>
+│
+├─ <span style="color: #1C1A16; font-weight: 700;">foundation-core/</span>                     <span style="color: #7C776C;">Spring 의존 없음</span>
+│  └─ response/ApiResponse.kt           <span style="color: #A87318;">← 봉투 + meta</span>
+│     response/PageResponse.kt
+│     error/ErrorCode.kt                <span style="color: #A87318;">← 계약 인터페이스</span>
+│     error/CommonErrorCode.kt
+│     error/BusinessException.kt
+│
+├─ <span style="color: #1C1A16; font-weight: 700;">foundation-web/</span>
+│  └─ advice/ResponseEnvelopeAdvice.kt  <span style="color: #A87318;">← 봉투를 씌우는 유일한 지점</span>
+│     advice/GlobalExceptionHandler.kt
+│     filter/TraceIdFilter.kt
+│     filter/RequestLoggingFilter.kt
+│     resolver/PageRequestResolver.kt
+│     config/WebAutoConfiguration.kt    <span style="color: #A87318;">← 의존성만 추가하면 켜진다</span>
+│
+├─ <span style="color: #1C1A16; font-weight: 700;">foundation-docs/</span>
+│  └─ ApiErrorCodes.kt                  <span style="color: #A87318;">← 엔드포인트에 다는 어노테이션</span>
+│     EnvelopeSchemaCustomizer.kt       <span style="color: #A87318;">← 봉투를 문서에 되돌려 넣는다</span>
+│     ErrorResponseCustomizer.kt
+│     DocsAutoConfiguration.kt
+│
+├─ <span style="color: #1C1A16; font-weight: 700;">foundation-observability/</span>
+│  └─ logging/StructuredLogEncoder.kt
+│     logging/MaskingRules.kt           <span style="color: #A87318;">← 마스킹 규칙의 단일 출처</span>
+│
+├─ <span style="color: #1C1A16; font-weight: 700;">foundation-test/</span>                     <span style="color: #7C776C;">test-fixtures</span>
+│  └─ ApiResponseAssertions.kt
+│     ErrorCodeContractTest.kt          <span style="color: #A87318;">← 코드 중복·상태 누락을 빌드에서 차단</span>
+│     RestDocsSupport.kt
+│
+├─ <span style="color: #2E7D5B; font-weight: 700;">sample-api/</span>                          <span style="color: #2E7D5B;">여기부터가 복제해서 고칠 코드</span>
+│  └─ user/UserController.kt
+│     user/UserService.kt
+│     user/UserErrorCode.kt
+│     user/dto/UserResponse.kt
+│
+└─ docs/
+   ├─ adr/0001-response-envelope.md     <span style="color: #A87318;">← 결정은 ADR로 남긴다</span>
+   └─ openapi/openapi.json              <span style="color: #A87318;">← 빌드 산출물이지만 커밋한다</span></div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px;">
+    <div style="background: #FFFFFF; border: 1px solid #E2DDD3; border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 8px;">
+      <div style="font-size: 14.5px; font-weight: 600;">기능으로 나눈다</div>
+      <div style="font-size: 13px; line-height: 1.6; color: #4A463E;"><code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px;">sample-api</code>는 controller/service/repository가 아니라 <code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px;">user/</code> 같은 기능 패키지로 나눈다. 복제 단위가 곧 기능이 된다.</div>
+    </div>
+    <div style="background: #FFFFFF; border: 1px solid #E2DDD3; border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 8px;">
+      <div style="font-size: 14.5px; font-weight: 600;">설정은 자동으로</div>
+      <div style="font-size: 13px; line-height: 1.6; color: #4A463E;">모든 foundation 모듈은 auto-configuration으로 등록된다. 애플리케이션에 복붙할 <code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px;">@Configuration</code>이 없어야 표준이 유지된다.</div>
+    </div>
+    <div style="background: #FFFFFF; border: 1px solid #E2DDD3; border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 8px;">
+      <div style="font-size: 14.5px; font-weight: 600;">openapi.json을 커밋한다</div>
+      <div style="font-size: 13px; line-height: 1.6; color: #4A463E;">생성물이지만 리뷰 대상이다. diff에 스펙 변경이 보여야 호환성 깨짐을 PR에서 잡는다.</div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>
